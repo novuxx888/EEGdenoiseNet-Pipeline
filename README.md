@@ -50,15 +50,21 @@ EEGdenoiseNet is a benchmark dataset for training and testing EEG denoising mode
 
 ---
 
-## 🔧 Algorithm: Feature-Engineered Ridge Regression
+## 🧠 Framing as a Machine Learning Problem
 
-### Approach
+This pipeline pivots from standard digital signal processing to a supervised machine learning approach.
 
-The key insight is that EEG signals have specific frequency characteristics, and EOG (eye movement) artifacts occupy different frequency bands. By creating multiple filtered versions of the signal and using regression, we can learn to separate signal from noise.
+### The Task
 
-### Feature Engineering
+This is a **supervised regression problem**. The goal is sequence-to-sequence prediction: taking a noisy signal (clean EEG + EOG artifacts) and predicting the exact voltage values of the true, underlying clean brainwave at every timestep.
 
-For each noisy input signal, we create:
+- **Input:** Noisy EEG signal (512 samples)
+- **Output:** Clean EEG signal (512 samples)
+- **Training:** Learn the mapping from noisy→clean using labeled pairs
+
+### The Features
+
+Feature engineering expands the 1D signal into a richer matrix:
 
 1. **Original signal** - the noisy input
 2. **Bandpass filtered versions** - multiple bandpass filters at different frequencies:
@@ -67,13 +73,33 @@ For each noisy input signal, we create:
    - 5-20 Hz
    - 8-15 Hz
 3. **Lowpass filtered versions** - different lowpass cutoffs:
-   - 10 Hz
-   - 15 Hz
-   - 20 Hz
-4. **EOG-subtracted versions** - subtract scaled EOG reference:
+   - 10 Hz, 15 Hz, 20 Hz
+4. **Scaled reference subtractions** - subtract scaled EOG reference:
    - 0.5x, 0.8x, 1.0x, 1.2x, 1.5x, 2.0x scales
 
-This creates a rich feature vector that captures both frequency-domain information and potential artifact patterns.
+This creates a rich feature vector (4096 dimensions) that captures both frequency-domain information and potential artifact patterns.
+
+### The Algorithm
+
+**Ridge Regression** (L2-regularized linear regression)
+
+The model learns the optimal linear combination of the engineered features to recreate the clean signal. The L2 regularization (alpha=1.0) helps prevent overfitting to the training noise and handles numerical instability in the feature matrix.
+
+### Evaluating Metrics
+
+Two complementary metrics evaluate different aspects of performance:
+
+1. **Pearson Correlation Coefficient** - Evaluates how well the model predicted the *shape* (timing of peaks/valleys) of the signal. Range: -1 to 1, where 1 is perfect correlation.
+
+2. **Relative Root Mean Squared Error (RRMSE)** - Evaluates how accurately it predicted the *actual amplitude* (voltage scale). Lower is better; < 0.20 means predictions are within 20% of true values.
+
+---
+
+## 🔧 Algorithm: Feature-Engineered Ridge Regression
+
+### Approach
+
+The key insight is that EEG signals have specific frequency characteristics, and EOG (eye movement) artifacts occupy different frequency bands. By creating multiple filtered versions of the signal and using regression, we can learn to separate signal from noise.
 
 ### Model
 
