@@ -245,12 +245,27 @@ rrmse = rmse / np.sqrt(np.mean(ground_truth ** 2))
 
 ## 🔬 Experiments Tried
 
+### All Methods Tested
+
 | Method | Pearson | RRMSE | Notes |
 |--------|---------|-------|-------|
 | Basic Bandpass Filter | 0.497 | 1.408 | Simple Butterworth |
 | Wiener Filter | 0.425 | 1.775 | Classical denoising |
 | Template Matching | 0.638 | 1.358 | Match EOG patterns |
-| **Ridge + Features** | **0.975** | **0.222** | **Best result** |
+| Wavelet Denoising | 0.76 | 1.16 | PyWavelets |
+| LMS Adaptive Filter | 0.00 | - | Diverged |
+| MLP Neural Network | 0.90 | 0.68 | Sklearn MLP |
+| HistGradientBoosting | 0.85 | 0.53 | Too slow |
+| Ridge (train at -5dB) | 0.89 | 0.43 | Baseline ML |
+| Ridge (curriculum 0dB) | 0.98 | 0.45 | Train easier, test harder |
+| Ridge (curriculum -2dB) | 0.98 | 0.45 | Best for Pearson |
+| **Segment-wise + Seg-2** | **0.9790** | **0.1881** | **Best for RRMSE** |
+
+### Key Discoveries
+
+1. **Curriculum Learning**: Training at easier SNRs (0dB, -2dB) and testing at harder (-5dB) significantly improves generalization
+2. **Segment-wise Processing**: Breaking signal into smaller segments improves amplitude recovery
+3. **Higher regularization (alpha)**: Helps with numerical stability at high-dimensional features
 
 ---
 
