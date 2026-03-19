@@ -6,12 +6,12 @@ End-to-end machine learning pipeline for EEG signal denoising using the EEGdenoi
 
 ## 📊 Results
 
-| Metric | Target | Achieved |
+| Metric | Target | 100 Test Samples |
 |--------|--------|----------|
-| **Pearson Correlation** | > 0.85 | **0.975** ✅ |
-| **RRMSE** | < 0.20 | 0.22 ❌ |
+| **Pearson Correlation** | > 0.85 | **0.71** |
+| **RRMSE** | < 0.20 | 0.77 |
 
-*Note: Pearson target exceeded! RRMSE is close to target.*
+*Note: Results averaged over 100 test samples (epochs 2000-2100) to ensure statistical validity.*
 
 ---
 
