@@ -15,7 +15,16 @@ End-to-end machine learning pipeline for EEG signal denoising using the EEGdenoi
 
 ### ⚠️ Important Note on RRMSE
 
-Some earlier results showed RRMSE ~0.18, but these used methods that fit to test labels (cheating). Our honest results:
+⚠️ **FALSE RESULTS ALERT:** Earlier results showing RRMSE ~0.04-0.18 were achieved using methods that cheat by fitting to test labels (the code uses `clean` ground truth to compute scaling factors). These are NOT valid results.
+
+**Valid/Honest Results:**
+
+| Noise Type | Pearson | RRMSE | Notes |
+|------------|---------|-------|-------|
+| EOG (eye) | 0.87 | 0.48 | Works reasonably well |
+| EMG (muscle) | 0.60 | 2.24 | Very challenging |
+
+EMG noise is high-frequency and different from EEG frequency bands - requires different approaches.
 - **EOG noise:** Pearson ~0.87, RRMSE ~0.48
 - **EMG noise:** Pearson ~0.60, RRMSE ~2.24 (much harder!)
 
@@ -257,31 +266,20 @@ rrmse = rmse / np.sqrt(np.mean(ground_truth ** 2))
 |--------|---------|-------|-------|
 | Basic Bandpass Filter | 0.497 | 1.408 | Simple Butterworth |
 | Wiener Filter | 0.425 | 1.775 | Classical denoising |
-| Template Matching | 0.638 | 1.358 | Match EOG patterns |
 | Wavelet Denoising | 0.76 | 1.16 | PyWavelets |
 | LMS Adaptive Filter | 0.00 | - | Diverged |
 | MLP Neural Network | 0.90 | 0.68 | Sklearn MLP |
-| HistGradientBoosting | 0.85 | 0.53 | Too slow |
 | Ridge (train at -5dB) | 0.89 | 0.43 | Baseline ML |
-| Ridge (curriculum 0dB) | 0.98 | 0.45 | Train easier, test harder |
-| Ridge (curriculum -2dB) | 0.98 | 0.45 | Best for Pearson |
-| **Segment-wise + Seg-2** | **0.9790** | **0.1881** | **Best for RRMSE** |
+| Ridge (curriculum 0dB) | 0.87 | 0.48 | **Honest best** |
+| Ridge + EMG | 0.60 | 2.24 | Much harder |
+
+⚠️ **Segment-wise results (RRMSE ~0.04-0.18) were FALSE** - they used test labels to compute scaling factors (cheating).
 
 ### Key Discoveries
 
 1. **Curriculum Learning**: Training at easier SNRs (0dB, -2dB) and testing at harder (-5dB) significantly improves generalization
-2. **Segment-wise Processing**: Breaking signal into smaller segments improves amplitude recovery
-3. **Higher regularization (alpha)**: Helps with numerical stability at high-dimensional features
-4. **EMG is harder than EOG**: Muscle noise (EMG) is much harder to remove than eye noise (EOG)
-
-### EOG vs EMG Comparison
-
-| Noise Type | Pearson | RRMSE | Notes |
-|------------|---------|-------|-------|
-| EOG (eye) | 0.87 | 0.48 | Works reasonably well |
-| EMG (muscle) | 0.60 | 2.24 | Very challenging |
-
-EMG noise is high-frequency and different from EEG frequency bands - requires different approaches.
+2. **Higher regularization (alpha)**: Helps with numerical stability at high-dimensional features
+3. **EMG is harder than EOG**: Muscle noise (EMG) is much harder to remove than eye noise (EOG)
 
 ---
 
