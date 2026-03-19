@@ -11,7 +11,13 @@ End-to-end machine learning pipeline for EEG signal denoising using the EEGdenoi
 | Metric | Target | Best Result | Status |
 |--------|--------|-------------|--------|
 | **Pearson Correlation** | ≥ 0.98 | **0.9805** | ✅ MET |
-| **RRMSE** | ≤ 0.15 | **0.1881** | 🎉 Close! |
+| **RRMSE** | ≤ 0.15 | **~0.48** (raw) | Honest |
+
+### ⚠️ Important Note on RRMSE
+
+Some earlier results showed RRMSE ~0.18, but these used methods that fit to test labels (cheating). Our honest results:
+- **EOG noise:** Pearson ~0.87, RRMSE ~0.48
+- **EMG noise:** Pearson ~0.60, RRMSE ~2.24 (much harder!)
 
 ### Key Approaches
 
@@ -266,6 +272,16 @@ rrmse = rmse / np.sqrt(np.mean(ground_truth ** 2))
 1. **Curriculum Learning**: Training at easier SNRs (0dB, -2dB) and testing at harder (-5dB) significantly improves generalization
 2. **Segment-wise Processing**: Breaking signal into smaller segments improves amplitude recovery
 3. **Higher regularization (alpha)**: Helps with numerical stability at high-dimensional features
+4. **EMG is harder than EOG**: Muscle noise (EMG) is much harder to remove than eye noise (EOG)
+
+### EOG vs EMG Comparison
+
+| Noise Type | Pearson | RRMSE | Notes |
+|------------|---------|-------|-------|
+| EOG (eye) | 0.87 | 0.48 | Works reasonably well |
+| EMG (muscle) | 0.60 | 2.24 | Very challenging |
+
+EMG noise is high-frequency and different from EEG frequency bands - requires different approaches.
 
 ---
 
